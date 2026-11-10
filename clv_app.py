@@ -69,8 +69,23 @@ else:
     }
     input_df = pd.DataFrame([raw_dict])
     
-    # Transform and Predict
-    trans = bundle['preprocessor'].transform(input_df)
+    # Transform payload with cross-version compatibility fallback
+    try:
+        trans = bundle['preprocessor'].transform(input_df)
+    except Exception:
+        proc = bundle['preprocessor']
+        num_cols = proc.transformers_[0][2]
+        cat_cols = proc.transformers_[1][2]
+        num_pipe = proc.named_transformers_['nums']
+        cat_trans = proc.named_transformers_['cat']
+        
+        X_num = input_df[num_cols]
+        for _, step in num_pipe.steps:
+            X_num = step.transform(X_num)
+        X_cat = cat_trans.transform(input_df[cat_cols])
+        import numpy as np
+        trans = np.hstack([X_num, X_cat])
+        
     trans_df = pd.DataFrame(trans, columns=bundle['encoded_features'])
     predicted_clv = float(bundle['model'].predict(trans_df)[0])
     
