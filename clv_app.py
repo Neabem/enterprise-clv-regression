@@ -107,13 +107,16 @@ else:
     shap_vals = explainer(trans_df)
     plt.clf()
     plt.close('all')
-    fig = plt.figure(figsize=(11, 5.5), dpi=120)
-    shap.plots.waterfall(shap_vals[0], max_display=10, show=False)
+    fig = plt.figure(figsize=(10, 4.0), dpi=120)
+    shap.plots.waterfall(shap_vals[0], max_display=8, show=False)
 
     # Eliminate the glitchy unformatted raw float on Axis 2
     axes = plt.gcf().axes
     if len(axes) >= 3:
         axes[2].set_visible(False)
+
+    # Compact vertical height so the entire cockpit fits cleanly in one screen
+    fig.set_size_inches(10, 4.0)
 
     st.pyplot(fig, bbox_inches='tight')
     plt.close('all')
